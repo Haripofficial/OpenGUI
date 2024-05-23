@@ -50,5 +50,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{PACKAGE_NAME}}_${{PACKAGE_VERSION}}_all.deb
-        path: ${{PACKAGE_NAME}}_${{PACKAGE_VERSION}}_all.deb
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
+        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
