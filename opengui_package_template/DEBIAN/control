@@ -1,0 +1,8 @@
+Package: opengui
+Version: 0.1
+Architecture: all
+Essential: no
+Priority: optional
+Depends: python3, PyQt5
+Maintainer: Haripofficial
+Description: GUI application to manage OpenVPN 3 Connections

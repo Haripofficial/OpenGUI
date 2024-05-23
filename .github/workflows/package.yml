@@ -1,0 +1,54 @@
+name: Package OpenGUI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  PACKAGE_NAME: "opengui"
+  PACKAGE_VERSION: "0.0.1"
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11.1'
+
+    - name: Update apt-get and install dependencies
+      run: |
+        sudo apt-get update -qy
+        sudo apt-get install -y dpkg-dev python3-pip
+
+    - name: Install Python packages
+      run: |
+        pip3 install -r requirements.txt
+        pip3 list
+
+    - name: Build the package
+      run: |
+        export PATH="/usr/bin/python3:$PATH"
+        pip install pyinstaller
+        pyinstaller --onefile opengui_source/opengui.py
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin
+        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin/opengui
+        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN/ -v
+        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_all
+        ls -la
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${PACKAGE_NAME}_${PACKAGE_VERSION}_all.deb
+        path: ${PACKAGE_NAME}_${PACKAGE_VERSION}_all.deb
