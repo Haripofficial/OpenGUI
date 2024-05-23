@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e  # Exit on any command failure
+set -o pipefail  # Exit if any command in a pipeline fails
+echo "Installing the Qtil CLI Package"
+echo "================================================================================="
+
+exit 0

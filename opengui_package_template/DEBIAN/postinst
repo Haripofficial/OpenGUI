@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e  # Exit on any command failure
+set -o pipefail  # Exit if any command in a pipeline fails
+
+
+# Continue with the installation
+echo "OpenGUI installation completed"
+echo "Run opengui to start the application and choose open from tray icon"
+echo -e "\n====================================COMPLETED===================================="
+
+exit 0
