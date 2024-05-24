@@ -13,8 +13,10 @@ env:
   PACKAGE_VERSION: "0.0.1"
 
 jobs:
-  package:
+  package_20.04:
     runs-on: ubuntu-20.04
+    env:
+      PACKAGE_DISTRO: "20.04"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -33,16 +35,53 @@ jobs:
         export PATH="/usr/bin/python3:$PATH"
         pip install pyinstaller
         pyinstaller --onefile opengui_src/opengui.py
-        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN
-        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin
-        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/share/opengui/svg
-        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin/opengui
-        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN/ -v
-        cp -R usr/share/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/share/
-        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_all
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/DEBIAN
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/bin
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/share/opengui/svg
+        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/bin/opengui
+        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/DEBIAN/ -v
+        cp -R usr/share/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/share/
+        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
-        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
+        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
+
+
+  package:
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE_DISTRO: "22.04"
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Build the package
+      run: |
+        sudo apt-get update -qy
+        sudo apt-get install -y dpkg-dev python3-pip
+        pip3 install -r requirements.txt
+        pip3 list
+        export PATH="/usr/bin/python3:$PATH"
+        pip install pyinstaller
+        pyinstaller --onefile opengui_src/opengui.py
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/DEBIAN
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/bin
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/share/opengui/svg
+        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/bin/opengui
+        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/DEBIAN/ -v
+        cp -R usr/share/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all/usr/share/
+        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_{PACKAGE_DISTRO}_all
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
+        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
