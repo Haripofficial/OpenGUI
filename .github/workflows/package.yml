@@ -25,21 +25,15 @@ jobs:
       with:
         python-version: '3.11.1'
 
-    - name: Update apt-get and install dependencies
+    - name: Build the package
       run: |
         sudo apt-get update -qy
         sudo apt-get install -y dpkg-dev python3-pip
-
-    - name: Install Python packages
-      run: |
         pip3 install -r requirements.txt
         pip3 list
-
-    - name: Build the package
-      run: |
         export PATH="/usr/bin/python3:$PATH"
         pip install pyinstaller
-        pyinstaller --onefile opengui_src/opengui.py
+        pyinstaller --add-data="opengui_src/openvpn.svg:." --onefile opengui_src/opengui.py
         mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN
         mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin
         mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/share/opengui/svg
