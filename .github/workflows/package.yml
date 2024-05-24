@@ -13,10 +13,10 @@ env:
   PACKAGE_VERSION: "0.0.1"
 
 jobs:
-  package_20.04:
+  package_20_04:
     runs-on: ubuntu-20.04
     env:
-      PACKAGE_DISTRO: "20.04"
+      PACKAGE_DISTRO: "20_04"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -53,7 +53,7 @@ jobs:
   package:
     runs-on: ubuntu-latest
     env:
-      PACKAGE_DISTRO: "22.04"
+      PACKAGE_DISTRO: "22_04"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
