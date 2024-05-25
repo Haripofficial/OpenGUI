@@ -104,6 +104,8 @@ jobs:
       - name: 'Create Release'
         uses: softprops/action-gh-release@v1
         with:
-          files: /home/runner/work/OpenGUI/OpenGUI/*.deb
+          files: |
+            ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+            ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
           tag_name: ${{ env.RELEASE_VERSION }}${{ github.run_number }}
           name: Release ${{ env.RELEASE_VERSION }}${{ github.run_number }}
