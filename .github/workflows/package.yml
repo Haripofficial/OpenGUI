@@ -11,12 +11,11 @@ on:
 env:
   PACKAGE_NAME: "opengui"
   PACKAGE_VERSION: "0.0.1"
+  RELEASE_VERSION: "0.0."
 
 jobs:
   package_20_04:
     runs-on: ubuntu-20.04
-    env:
-      PACKAGE_DISTRO: "20_04"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -46,14 +45,13 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
         path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
 
 
-  package:
+
+  package_22_04:
     runs-on: ubuntu-latest
-    env:
-      PACKAGE_DISTRO: "22_04"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -83,5 +81,30 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_${{ env.PACKAGE_DISTRO }}_all.deb
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
         path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_all.deb
+
+
+  release-content:
+    name: 'Create GitHub Release'
+    runs-on: ubuntu-latest
+    needs: [ package_20_04, package_22_04]
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+    steps:      
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
+      - name: 'Create Release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+            ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb 
+          tag_name: ${{ env.RELEASE_VERSION }}${{ github.run_number }}
+          name: Release ${{ env.RELEASE_VERSION }}${{ github.run_number }}
