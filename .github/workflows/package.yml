@@ -88,6 +88,7 @@ jobs:
   release-content:
     name: 'Create GitHub Release'
     runs-on: ubuntu-latest
+    permissions: write-all
     needs: [ package_20_04, package_22_04]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
