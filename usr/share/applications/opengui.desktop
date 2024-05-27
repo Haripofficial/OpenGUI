@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.1
+Name=opengui
+Comment=OpenGUI application 
+Exec=/usr/bin/opengui
+Icon=openvpn
+Terminal=false
+Type=Application
+Categories=Utility;Application;

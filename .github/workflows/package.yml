@@ -11,11 +11,11 @@ on:
 env:
   PACKAGE_NAME: "opengui"
   PACKAGE_VERSION: "0.0.1"
+  RELEASE_VERSION: "0.0."
 
 jobs:
-  package:
-    runs-on: ubuntu-latest
-
+  package_20_04:
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -23,32 +23,89 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11.1'
-
-    - name: Update apt-get and install dependencies
-      run: |
-        sudo apt-get update -qy
-        sudo apt-get install -y dpkg-dev python3-pip
-
-    - name: Install Python packages
-      run: |
-        pip3 install -r requirements.txt
-        pip3 list
+        python-version: '3.7'
 
     - name: Build the package
       run: |
+        sudo apt-get update -qy
+        sudo apt-get install -y dpkg-dev python3-pip libxcb-xinerama0
+        pip3 install -r requirements.txt
+        pip3 list
         export PATH="/usr/bin/python3:$PATH"
         pip install pyinstaller
         pyinstaller --onefile opengui_src/opengui.py
-        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN
-        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin
-        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/usr/bin/opengui
-        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_all/DEBIAN/ -v
-        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_all
-        ls -la
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/DEBIAN
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/usr/bin
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/usr/share/opengui/svg
+        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/usr/bin/opengui
+        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/DEBIAN/ -v
+        cp -R usr/share/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all/usr/share/
+        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_20_04_all
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${PACKAGE_NAME}_${PACKAGE_VERSION}_all.deb
-        path: ${PACKAGE_NAME}_${PACKAGE_VERSION}_all.deb
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+
+
+
+  package_22_04:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Build the package
+      run: |
+        sudo apt-get update -qy
+        sudo apt-get install -y dpkg-dev python3-pip
+        pip3 install -r requirements.txt
+        pip3 list
+        export PATH="/usr/bin/python3:$PATH"
+        pip install pyinstaller
+        pyinstaller --onefile opengui_src/opengui.py
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/DEBIAN
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/usr/bin
+        mkdir -p ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/usr/share/opengui/svg
+        cp dist/opengui ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/usr/bin/opengui
+        cp -R opengui_package_template/DEBIAN/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/DEBIAN/ -v
+        cp -R usr/share/* ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all/usr/share/
+        dpkg-deb --build ${PACKAGE_NAME}_${PACKAGE_VERSION}_ubuntu_22_04_all
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
+        path: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
+
+
+  release-content:
+    name: 'Create GitHub Release'
+    runs-on: ubuntu-latest
+    permissions: write-all
+    needs: [ package_20_04, package_22_04]
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+    steps:      
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
+      - name: 'Create Release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            /home/runner/work/OpenGUI/OpenGUI/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_20_04_all.deb
+            /home/runner/work/OpenGUI/OpenGUI/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_ubuntu_22_04_all.deb
+          tag_name: ${{ env.RELEASE_VERSION }}${{ github.run_number }}
+          name: Release ${{ env.RELEASE_VERSION }}${{ github.run_number }}

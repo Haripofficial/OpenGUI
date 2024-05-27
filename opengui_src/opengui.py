@@ -156,7 +156,7 @@ class OpenGUI(QMainWindow):
     def initTrayIcon(self):
         # Create the tray icon
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon('openvpn.svg'))  # Set your icon path here
+        self.tray_icon.setIcon(QIcon('/usr/share/icons/hicolor/48x48/apps/openvpn.png'))  # Set your icon path here
         
         # Create the tray menu
         tray_menu = QMenu()
